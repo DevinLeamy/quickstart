@@ -128,3 +128,8 @@ topic_tof_map = "/mapping/tof_map"
 timestamp = ["float",'1']
 occupied_points = ["list", "1"]
 topic_wavemap_occupied_points = "/mapping/wavemap_occupied_points"
+
+[POINT_CLOUD]
+timestamp = ["float",'1']
+points = ["list", "1"]
+topic_point_cloud = "/mapping/point_cloud"
