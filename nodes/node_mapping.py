@@ -143,7 +143,6 @@ class DepthWavemapNode:
             self.publisher.publish_msg(
                 TOPIC_ROBOT_POSE_GRID_COORDS, robot_pose_grid_coords_msg)
 
-<<<<<<< Updated upstream
             # Get point cloud and publish message
             point_cloud = self.depth_wavemap_manager.get_point_cloud()
             if point_cloud is not None:
@@ -152,15 +151,6 @@ class DepthWavemapNode:
                 self.publisher.publish_msg(TOPIC_POINT_CLOUD, point_cloud_msg)
             else:
                 print("No point cloud data available")
-=======
-            point_cloud_msg = form_point_cloud_message(
-                t_k,
-                self.depth_wavemap_manager.get_point_cloud()
-            )
-            print(f"POINT CLOUD MSG: {point_cloud_msg}")
-            self.publisher.publish_msg(
-                TOPIC_POINT_CLOUD, point_cloud_msg)
->>>>>>> Stashed changes
 
 
 if __name__ == "__main__":
