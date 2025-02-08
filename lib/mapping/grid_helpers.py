@@ -128,6 +128,7 @@ class DynamicOccupancyGrid:
         self.lower_body_query_points = np.concatenate((np.tile(self.query_height, (len(self.lower_body_indicies), 1)), self.lower_body_indicies), axis=1)
         self.upper_body_query_points = np.concatenate((np.tile(self.query_height, (len(self.upper_body_indicies), 1)), self.upper_body_indicies), axis=1)
 
+
     def update_occupancy_grid(self, map: wave.Map):
         """
         Update occupancy grid with new wavemap.
