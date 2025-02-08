@@ -1,42 +1,47 @@
 from visualizer import PointCloudVisualizer
-
+import paho.mqtt.client as mqtt
+import json
 from lib.messages.point_cloud_msg import POINT_CLOUD_MSG
-from lib.messages.topic_to_message_type import (
-    TOPIC_POINT_CLOUD,
-)
-from lib.messages.mqtt_utils import MQTTSubscriber
+from lib.messages.topic_to_message_type import TOPIC_POINT_CLOUD
+import numpy as np
 
 
 class DesktopVisualizer:
     def __init__(self, raspberry_pi_ip):
         self.visualizer = PointCloudVisualizer()
-        self.mqtt_subscriber = MQTTSubscriber(
-            broker_address=raspberry_pi_ip,
-            topic_to_message_map={
-                TOPIC_POINT_CLOUD: POINT_CLOUD_MSG
-            }
-        )
+
+        # Setup MQTT client
+        self.client = mqtt.Client()
+        self.client.on_connect = self.on_connect
+        self.client.on_message = self.on_message
+
+        print(f"Connecting to broker at {raspberry_pi_ip}...")
+        self.client.connect(raspberry_pi_ip, 1883)
+
+    def on_connect(self, client, userdata, flags, rc):
+        print(f"Connected with result code {rc}")
+        self.client.subscribe(TOPIC_POINT_CLOUD)
+        print(f"Subscribed to {TOPIC_POINT_CLOUD}")
+
+    def on_message(self, client, userdata, message: mqtt.MQTTMessage):
+        try:
+            message = json.loads(message.payload.decode())
+            points = message['points']
+            array = np.array(points)
+            print(f"Received payload: {len(array)}")
+            self.visualizer.visualize(array)
+        except Exception as e:
+            print(f"Error processing message: {e}")
 
     def run(self):
-        self.mqtt_subscriber.start()
-
         try:
-            while True:
-                self.process_input()
+            print("Listening for point cloud messages...")
+            self.client.loop_forever()
         except KeyboardInterrupt:
             self.close()
 
-    def process_input(self):
-        point_cloud_message = self.mqtt_subscriber.get_latest_message(
-            TOPIC_POINT_CLOUD)
-
-        print(f"POINT CLOUD MESSAGE: {point_cloud_message}")
-
-        if point_cloud_message is not None:
-            self.visualizer.visualize(point_cloud_message.points)
-
     def close(self):
-        self.mqtt_subscriber.stop()
+        self.client.disconnect()
         self.visualizer.close()
 
 
@@ -44,7 +49,8 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--ip", type=str, default="localhost")
+    parser.add_argument("--ip", type=str, default="localhost",
+                        help="IP address of the Raspberry Pi (first address from hostname -I)")
     args = parser.parse_args()
 
     visualizer = DesktopVisualizer(args.ip)
