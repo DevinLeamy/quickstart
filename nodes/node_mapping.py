@@ -3,6 +3,7 @@ import time
 
 from lib.localization.utils.input_processing import (
     form_flattened_occupancy_grid_message,
+    form_point_cloud_message,
     form_robot_pose_grid_coords_message,
     form_se3_from_localization_message,
     form_wavemap_occupied_points_message
@@ -14,13 +15,17 @@ from lib.messages.occupancy_grid_msg import OCCUPANCY_GRID_MSG
 from lib.messages.robot_pose_grid_coords_msg import ROBOT_POSE_GRID_COORDS_MSG
 from lib.messages.wavemap_occupied_points_msg import WAVEMAP_OCCUPIED_POINTS_MSG
 from lib.messages.mqtt_utils import MQTTPublisher, MQTTSubscriber
+from lib.messages.point_cloud_msg import POINT_CLOUD_MSG
 from lib.messages.topic_to_message_type import (
     TOPIC_EXTENDED_POSE_W_BIAS,
     TOPIC_OCCUPANCY_GRID,
     TOPIC_ROBOT_POSE_GRID_COORDS,
     TOPIC_TRAVERSABILITY_GRID,
     TOPIC_WAVEMAP_OCCUPIED_POINTS,
+    TOPIC_POINT_CLOUD,
 )
+
+ADDRESS = "0.0.0.0"
 
 
 class DepthWavemapNode:
@@ -30,7 +35,8 @@ class DepthWavemapNode:
 
         :param logging_level: The logging level to use for the logger.
         """
-        self.logger = Logger('depth_wavemap_node', 'logs/depth_wavemap_node.log', level=logging_level)
+        self.logger = Logger('depth_wavemap_node',
+                             'logs/depth_wavemap_node.log', level=logging_level)
         self.logger.info("Initializing DepthWavemapNode")
 
         # Initialize depth wavemap manager
@@ -38,19 +44,21 @@ class DepthWavemapNode:
 
         # Initialize the publisher
         self.publisher = MQTTPublisher(
-            broker_address="localhost",
+            broker_address=ADDRESS,
             topic_to_message_map={
                 TOPIC_OCCUPANCY_GRID: OCCUPANCY_GRID_MSG,
                 TOPIC_TRAVERSABILITY_GRID: OCCUPANCY_GRID_MSG,
                 TOPIC_ROBOT_POSE_GRID_COORDS: ROBOT_POSE_GRID_COORDS_MSG,
-                TOPIC_WAVEMAP_OCCUPIED_POINTS: WAVEMAP_OCCUPIED_POINTS_MSG
+                TOPIC_WAVEMAP_OCCUPIED_POINTS: WAVEMAP_OCCUPIED_POINTS_MSG,
+                TOPIC_POINT_CLOUD: POINT_CLOUD_MSG
             }
         )
 
         # Initialize pose subscriber
         self.mqtt_subscriber = MQTTSubscriber(
-            broker_address="localhost",
-            topic_to_message_map={TOPIC_EXTENDED_POSE_W_BIAS: EXTENDED_POSE_W_BIAS_MSG}
+            broker_address=ADDRESS,
+            topic_to_message_map={
+                TOPIC_EXTENDED_POSE_W_BIAS: EXTENDED_POSE_W_BIAS_MSG}
         )
 
         # Set loop rate in Hz
@@ -78,7 +86,8 @@ class DepthWavemapNode:
                 if sleep_time > 0:
                     time.sleep(sleep_time)
         except KeyboardInterrupt:
-            self.logger.info("DepthWavemapNode stopped by user. Stopping and saving map!")
+            self.logger.info(
+                "DepthWavemapNode stopped by user. Stopping and saving map!")
             self.depth_wavemap_manager.save_map()
             self.logger.info("Saved map!")
             self.mqtt_subscriber.stop()
@@ -88,11 +97,13 @@ class DepthWavemapNode:
         Processes incoming messages, updates the depth wavemap, and publishes grid messages.
         """
         # Get the latest extended pose data
-        self.extended_pose_data = self.mqtt_subscriber.get_latest_message(TOPIC_EXTENDED_POSE_W_BIAS)
+        self.extended_pose_data = self.mqtt_subscriber.get_latest_message(
+            TOPIC_EXTENDED_POSE_W_BIAS)
         if self.extended_pose_data is not None:
             # Retrieve timestamp and T_ab_k from message
             t_k = self.extended_pose_data.timestamp
-            T_ab_k = form_se3_from_localization_message(self.extended_pose_data)
+            T_ab_k = form_se3_from_localization_message(
+                self.extended_pose_data)
 
             # Update depth wavemap manager with new pose
             self.depth_wavemap_manager.integrate_depth_image(t_k, T_ab_k)
@@ -114,14 +125,16 @@ class DepthWavemapNode:
                 self.depth_wavemap_manager.occupancy_grid.grid_length
             )
             # Publish the traversability grid
-            self.publisher.publish_msg(TOPIC_TRAVERSABILITY_GRID, traversability_grid_msg)
+            self.publisher.publish_msg(
+                TOPIC_TRAVERSABILITY_GRID, traversability_grid_msg)
 
             # Generate wavemap occupied points message and output
             wavemap_occupied_points_msg = form_wavemap_occupied_points_message(
                 t_k,
                 self.depth_wavemap_manager.get_occupied_points()
             )
-            self.publisher.publish_msg(TOPIC_WAVEMAP_OCCUPIED_POINTS, wavemap_occupied_points_msg)
+            self.publisher.publish_msg(
+                TOPIC_WAVEMAP_OCCUPIED_POINTS, wavemap_occupied_points_msg)
 
             # Generate robot pose grid coords message and output
             robot_pose_grid_coords_msg = form_robot_pose_grid_coords_message(
@@ -129,7 +142,16 @@ class DepthWavemapNode:
                 self.depth_wavemap_manager.occupancy_grid.query_cell_width,
                 self.depth_wavemap_manager.occupancy_grid.planar_spread
             )
-            self.publisher.publish_msg(TOPIC_ROBOT_POSE_GRID_COORDS, robot_pose_grid_coords_msg)
+            self.publisher.publish_msg(
+                TOPIC_ROBOT_POSE_GRID_COORDS, robot_pose_grid_coords_msg)
+
+            point_cloud_msg = form_point_cloud_message(
+                t_k,
+                self.depth_wavemap_manager.get_point_cloud()
+            )
+            self.publisher.publish_msg(
+                TOPIC_POINT_CLOUD, point_cloud_msg)
+
 
 if __name__ == "__main__":
     node = DepthWavemapNode()

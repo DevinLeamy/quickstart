@@ -1,4 +1,5 @@
 import numpy as np
+from lib.messages.point_cloud_msg import POINT_CLOUD_MSG
 from navlie.types import StateWithCovariance
 from pymlg.numpy import SE3, SO3
 
@@ -26,7 +27,8 @@ def form_se3_from_localization_message(msg: EXTENDED_POSE_W_BIAS_MSG) -> np.ndar
     r_a_b = np.array([msg.r_a_b_x, msg.r_a_b_y, msg.r_a_b_z]).reshape(1, 3)
 
     # Extract orientation vector
-    phi_a_b = np.array([msg.phi_a_b_x, msg.phi_a_b_y, msg.phi_a_b_z]).reshape(1, 3)
+    phi_a_b = np.array([msg.phi_a_b_x, msg.phi_a_b_y,
+                       msg.phi_a_b_z]).reshape(1, 3)
 
     # Compute rotation matrix using SO3 exponential map
     C_ab = SO3.Exp(phi_a_b)
@@ -35,6 +37,7 @@ def form_se3_from_localization_message(msg: EXTENDED_POSE_W_BIAS_MSG) -> np.ndar
     T_ab = SE3.from_components(C_ab, r_a_b)
 
     return T_ab
+
 
 def form_imu_message(t_k: float, omega_b_k: np.array, a_b_k: np.array) -> RAW_IMU_DATA_MSG:
     """
@@ -63,6 +66,7 @@ def form_imu_message(t_k: float, omega_b_k: np.array, a_b_k: np.array) -> RAW_IM
     imu_msg.accel_z = a_b_k[2][0]
 
     return imu_msg
+
 
 def form_localization_message(t_k: float, x_k: StateWithCovariance) -> EXTENDED_POSE_W_BIAS_MSG:
     """
@@ -107,6 +111,7 @@ def form_localization_message(t_k: float, x_k: StateWithCovariance) -> EXTENDED_
 
     return loc_msg
 
+
 def form_robot_pose_message(msg: EXTENDED_POSE_W_BIAS_MSG) -> ROBOT_POSE_MSG:
     """
     Forms a ROBOT_POSE_MSG from an extended pose message.
@@ -124,6 +129,7 @@ def form_robot_pose_message(msg: EXTENDED_POSE_W_BIAS_MSG) -> ROBOT_POSE_MSG:
     pose_msg.y_m = msg.r_a_b_y
     pose_msg.theta_rad = msg.phi_a_b_z  # Convert orientation to robot pose format
     return pose_msg
+
 
 def form_robot_extended_pose_message(msg: EXTENDED_POSE_W_BIAS_MSG) -> ROBOT_EXTENDED_POSE_MSG:
     """
@@ -149,6 +155,7 @@ def form_robot_extended_pose_message(msg: EXTENDED_POSE_W_BIAS_MSG) -> ROBOT_EXT
     pose_msg.phi_a_b_z_rad = msg.phi_a_b_z
     return pose_msg
 
+
 def form_flattened_occupancy_grid_message(t_k: float, flat_occupancy_grid: np.array, width: int) -> OCCUPANCY_GRID_MSG:
     """
     Forms an OCCUPANCY_GRID_MSG from a flattened occupancy grid.
@@ -171,6 +178,19 @@ def form_flattened_occupancy_grid_message(t_k: float, flat_occupancy_grid: np.ar
     grid_msg.flattened_grid_list = flat_occupancy_grid.tolist()
     return grid_msg
 
+
+def form_point_cloud_message(t_k: float, points: np.ndarray) -> POINT_CLOUD_MSG:
+    """
+    Forms a POINT_CLOUD_MSG from an array of points.
+    """
+    msg = POINT_CLOUD_MSG(
+        timestamp=t_k,
+        points=points
+    )
+
+    return msg
+
+
 def form_wavemap_occupied_points_message(t_k: float, occupied_points: list) -> WAVEMAP_OCCUPIED_POINTS_MSG:
     """
     Forms a WAVEMAP_OCCUPIED_POINTS_MSG from an array of occupied points.
@@ -187,6 +207,7 @@ def form_wavemap_occupied_points_message(t_k: float, occupied_points: list) -> W
     msg.timestamp = t_k
     msg.occupied_points = occupied_points
     return msg
+
 
 def form_robot_pose_grid_coords_message(extended_pose_msg: EXTENDED_POSE_W_BIAS_MSG, grid_cell_size_m: float, grid_width_m: float) -> ROBOT_POSE_GRID_COORDS_MSG:
     """
@@ -217,5 +238,6 @@ def form_robot_pose_grid_coords_message(extended_pose_msg: EXTENDED_POSE_W_BIAS_
     msg.timestamp = extended_pose_msg.timestamp
     msg.x_grid = int(grid_coords[0])
     msg.y_grid = int(grid_coords[1])
-    msg.theta_rad = extended_pose_msg.phi_a_b_z  # Convert orientation to grid format
+    # Convert orientation to grid format
+    msg.theta_rad = extended_pose_msg.phi_a_b_z
     return msg

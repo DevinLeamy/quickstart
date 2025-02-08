@@ -33,6 +33,7 @@ TOPIC_TARGET_POINT = '/planning/target_point'
 TOPIC_TARGET_VELOCITY = '/control/target_velocity'
 TOPIC_TOF_MAP = '/mapping/tof_map'
 TOPIC_WAVEMAP_OCCUPIED_POINTS = '/mapping/wavemap_occupied_points'
+TOPIC_POINT_CLOUD = '/mapping/point_cloud'
 
 # Topic to message type mapping
 topic_to_message_type = {
@@ -53,4 +54,5 @@ topic_to_message_type = {
     '/control/target_velocity': TARGET_VELOCITY_MSG,
     '/mapping/tof_map': TOF_MAP_MSG,
     '/mapping/wavemap_occupied_points': WAVEMAP_OCCUPIED_POINTS_MSG,
+    '/mapping/point_cloud': POINT_CLOUD_MSG,
 }

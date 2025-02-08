@@ -1,23 +1,19 @@
-import open3d as o3d
-import numpy as np
-
 from visualizer import PointCloudVisualizer
-from wv_manager import DepthWavemapManager
 
-from lib.messages.wavemap_occupied_points_msg import WAVEMAP_OCCUPIED_POINTS_MSG
+from lib.messages.point_cloud_msg import POINT_CLOUD_MSG
 from lib.messages.topic_to_message_type import (
-    TOPIC_WAVEMAP_OCCUPIED_POINTS,
+    TOPIC_POINT_CLOUD,
 )
 from lib.messages.mqtt_utils import MQTTSubscriber
 
 
-class Visualizer:
-    def __init__(self):
+class DesktopVisualizer:
+    def __init__(self, raspberry_pi_ip):
         self.visualizer = PointCloudVisualizer()
         self.mqtt_subscriber = MQTTSubscriber(
-            broker_address="localhost",
+            broker_address=raspberry_pi_ip,
             topic_to_message_map={
-                TOPIC_WAVEMAP_OCCUPIED_POINTS: WAVEMAP_OCCUPIED_POINTS_MSG,
+                TOPIC_POINT_CLOUD: POINT_CLOUD_MSG
             }
         )
 
@@ -32,14 +28,24 @@ class Visualizer:
 
     def process_input(self):
         point_cloud_message = self.mqtt_subscriber.get_latest_message(
-            TOPIC_WAVEMAP_OCCUPIED_POINTS)
+            TOPIC_POINT_CLOUD)
 
         print(f"POINT CLOUD MESSAGE: {point_cloud_message}")
+
+        if point_cloud_message is not None:
+            self.visualizer.visualize(point_cloud_message.points)
 
     def close(self):
         self.mqtt_subscriber.stop()
         self.visualizer.close()
 
 
-visualizer = Visualizer()
-visualizer.run()
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--ip", type=str, default="localhost")
+    args = parser.parse_args()
+
+    visualizer = DesktopVisualizer(args.ip)
+    visualizer.run()
