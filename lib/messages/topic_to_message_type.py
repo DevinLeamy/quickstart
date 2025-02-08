@@ -14,6 +14,7 @@ from lib.messages.target_velocity_msg import TARGET_VELOCITY_MSG
 from lib.messages.tof_map_msg import TOF_MAP_MSG
 from lib.messages.wavemap_occupied_points_msg import WAVEMAP_OCCUPIED_POINTS_MSG
 from lib.messages.wheel_velocities_data_msg import WHEEL_VELOCITIES_DATA_MSG
+from lib.messages.point_cloud_msg import POINT_CLOUD_MSG
 
 # Topic variables
 TOPIC_GYRO = '/imu/gyro'
