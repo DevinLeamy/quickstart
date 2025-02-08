@@ -25,6 +25,7 @@ from lib.messages.topic_to_message_type import (
     TOPIC_POINT_CLOUD,
 )
 
+# ADDRESS = "0.0.0.0"
 ADDRESS = "0.0.0.0"
 
 
@@ -68,9 +69,6 @@ class DepthWavemapNode:
         """
         Starts the DepthWavemapNode, processing input and publishing messages in a loop.
         """
-
-        # TODO: Need to access the point cloud from the wavemap manager and publish it
-        # to a place for visualization.
         self.mqtt_subscriber.start()
         self.publisher.run()
 
@@ -145,12 +143,14 @@ class DepthWavemapNode:
             self.publisher.publish_msg(
                 TOPIC_ROBOT_POSE_GRID_COORDS, robot_pose_grid_coords_msg)
 
-            point_cloud_msg = form_point_cloud_message(
-                t_k,
-                self.depth_wavemap_manager.get_point_cloud()
-            )
-            self.publisher.publish_msg(
-                TOPIC_POINT_CLOUD, point_cloud_msg)
+            # Get point cloud and publish message
+            point_cloud = self.depth_wavemap_manager.get_point_cloud()
+            if point_cloud is not None:
+                print(f"Publishing point cloud with {len(point_cloud)} points")
+                point_cloud_msg = form_point_cloud_message(t_k, point_cloud)
+                self.publisher.publish_msg(TOPIC_POINT_CLOUD, point_cloud_msg)
+            else:
+                print("No point cloud data available")
 
 
 if __name__ == "__main__":

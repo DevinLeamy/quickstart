@@ -5,6 +5,7 @@ from lib.messages.gyro_data_msg import GYRO_DATA_MSG
 from lib.messages.localization_initialized_msg import LOCALIZATION_INITIALIZED_MSG
 from lib.messages.occupancy_grid_msg import OCCUPANCY_GRID_MSG
 from lib.messages.path_plan_msg import PATH_PLAN_MSG
+from lib.messages.point_cloud_msg import POINT_CLOUD_MSG
 from lib.messages.raw_imu_data_msg import RAW_IMU_DATA_MSG
 from lib.messages.robot_extended_pose_msg import ROBOT_EXTENDED_POSE_MSG
 from lib.messages.robot_pose_grid_coords_msg import ROBOT_POSE_GRID_COORDS_MSG
@@ -14,7 +15,6 @@ from lib.messages.target_velocity_msg import TARGET_VELOCITY_MSG
 from lib.messages.tof_map_msg import TOF_MAP_MSG
 from lib.messages.wavemap_occupied_points_msg import WAVEMAP_OCCUPIED_POINTS_MSG
 from lib.messages.wheel_velocities_data_msg import WHEEL_VELOCITIES_DATA_MSG
-from lib.messages.point_cloud_msg import POINT_CLOUD_MSG
 
 # Topic variables
 TOPIC_GYRO = '/imu/gyro'

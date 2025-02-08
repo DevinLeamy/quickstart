@@ -110,7 +110,7 @@ class DepthWavemapManager:
                 },
             })
 
-    def get_point_cloud(self) -> np.ndarray:
+    def get_point_cloud(self):
         """
         Get the current occupied points as a numpy array.
 
@@ -118,7 +118,7 @@ class DepthWavemapManager:
         -------
             np.ndarray: Array of shape (N, 3) containing the 3D coordinates of occupied points.
         """
-        return self.occupancy_grid.get_point_cloud()
+        return self.occupancy_grid.get_point_cloud().tolist()
 
     def integrate_depth_image(self, t_k: float, T_ab_k: np.ndarray):
         """
