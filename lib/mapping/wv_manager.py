@@ -110,6 +110,16 @@ class DepthWavemapManager:
                 },
             })
 
+    def get_point_cloud(self) -> np.ndarray:
+        """
+        Get the current occupied points as a numpy array.
+
+        Returns
+        -------
+            np.ndarray: Array of shape (N, 3) containing the 3D coordinates of occupied points.
+        """
+        return self.occupancy_grid.get_point_cloud()
+
     def integrate_depth_image(self, t_k: float, T_ab_k: np.ndarray):
         """
         Integrate the current depth image into the local submap using a pose estimate.
@@ -140,7 +150,8 @@ class DepthWavemapManager:
         T_ac_k = wave.Pose(T_ac_k)
 
         # Run the integration pipeline
-        self.pipeline.run_pipeline(["my_integrator"], wave.PosedImage(T_ac_k, image))
+        self.pipeline.run_pipeline(
+            ["my_integrator"], wave.PosedImage(T_ac_k, image))
 
         # After integrating, update occupancy grid
         self.occupancy_grid.update_occupancy_grid(self.local_submap)
