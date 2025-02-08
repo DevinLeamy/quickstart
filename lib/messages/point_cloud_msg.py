@@ -15,7 +15,7 @@ class POINT_CLOUD_MSG(MqttMessageBase):
         self.timestamp = timestamp
         self.points = points
 
-    def convert_to_playload(self) -> str:
+    def convert_to_payload(self) -> str:
         """Convert message to dictionary for MQTT transmission."""
         try:
             data = {
