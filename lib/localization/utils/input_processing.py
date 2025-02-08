@@ -183,10 +183,7 @@ def form_point_cloud_message(t_k: float, points: np.ndarray) -> POINT_CLOUD_MSG:
     """
     Forms a POINT_CLOUD_MSG from an array of points.
     """
-    msg = POINT_CLOUD_MSG(
-        timestamp=t_k,
-        points=points
-    )
+    msg = POINT_CLOUD_MSG(t_k, points)
 
     return msg
 
