@@ -60,6 +60,9 @@ class DepthWavemapNode:
         """
         Starts the DepthWavemapNode, processing input and publishing messages in a loop.
         """
+
+        # TODO: Need to access the point cloud from the wavemap manager and publish it
+        # to a place for visualization.
         self.mqtt_subscriber.start()
         self.publisher.run()
 
