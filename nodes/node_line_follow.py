@@ -7,6 +7,9 @@ from lib.messages.topic_to_message_type import TOPIC_TARGET_VELOCITY
 
 from lib.sensors.realsense.realsense_manager import RealSenseManager
 
+import cv2
+import numpy as np
+
 # ------------------------------------------------------------------------------------
 # Constants & Setup
 # ------------------------------------------------------------------------------------
@@ -58,7 +61,33 @@ class LineFollower:
 
     # Generate a frame encoding from a frame.
     def process_frame(self, frame):
-        pass
+
+        # Convert frame to HSV color space
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+        # Define yellow color range in HSV
+        lower_yellow = np.array([20, 100, 100])
+        upper_yellow = np.array([30, 255, 255])
+
+        # Create mask for yellow pixels
+        mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
+
+        # Find contours in the mask
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        if contours:
+            # Find the largest contour (assuming it's the line)
+            largest_contour = max(contours, key=cv2.contourArea)
+            
+            # Calculate centroid of the largest contour
+            M = cv2.moments(largest_contour)
+            if M["m00"] != 0:
+                cx = int(M["m10"] / M["m00"])
+                cy = int(M["m01"] / M["m00"])
+                return {"centroid": (cx, cy), "frame_width": frame.shape[1]}
+        
+        # Return None if no yellow line is detected
+        return None
 
     # Generate an action from a frame encoding.
     def generate_action(self, frame_encoding: FrameEncoding) -> Action:
