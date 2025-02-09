@@ -38,12 +38,13 @@ class LineFollower:
     def __init__(self):
         self.camera = RealSenseManager()
         self.camera.start_pipeline()
+        # self.started = True
         self.started = False
 
-        listen_keyboard(
-            on_press=self.press,
-            on_release=self.release,
-        )
+        # listen_keyboard(
+        #     on_press=self.press,
+        #     on_release=self.release,
+        # )
 
     def run(self):
         while True:
