@@ -54,7 +54,9 @@ class LineFollower:
             frame = self.camera.get_color_frame()
 
             frame_encoding = self.process_frame(frame)
+            print("FRAME ENCODING: ", frame_encoding.value)
             action = self.generate_action(frame_encoding)
+            print("ACTION: ", action.linear_velocity, action.angular_velocity)
             self.perform_action(action)
 
             time.sleep(0.1)
@@ -73,19 +75,20 @@ class LineFollower:
         mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
 
         # Find contours in the mask
-        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(
+            mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         if contours:
             # Find the largest contour (assuming it's the line)
             largest_contour = max(contours, key=cv2.contourArea)
-            
+
             # Calculate centroid of the largest contour
             M = cv2.moments(largest_contour)
             if M["m00"] != 0:
                 cx = int(M["m10"] / M["m00"])
                 cy = int(M["m01"] / M["m00"])
                 return {"centroid": (cx, cy), "frame_width": frame.shape[1]}
-        
+
         # Return None if no yellow line is detected
         return None
 
