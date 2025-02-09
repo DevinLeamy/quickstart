@@ -132,7 +132,7 @@ class LineFollower:
     def release(self, key):
         print(f"Released key: {key}")
 
-    def stop(self, key):
+    def stop(self):
         mqtt_publisher.publish_msg(
             TOPIC_TARGET_VELOCITY, TARGET_VELOCITY_MSG(time.time(), 0.0, 0.0))
 
