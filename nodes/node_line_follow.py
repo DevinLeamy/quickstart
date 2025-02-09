@@ -14,6 +14,9 @@ mqtt_publisher = MQTTPublisher(broker_address="localhost", topic_to_message_map=
                                TOPIC_TARGET_VELOCITY: TARGET_VELOCITY_MSG})
 mqtt_publisher.run()
 
+class FrameEncoding:
+    def __init__(self):
+        pass
 
 class LineFollower:
     def __init__(self):
@@ -26,6 +29,22 @@ class LineFollower:
         )
 
     def run(self):
+        frame = self.camera.get_color_frame()
+
+        frame_encoding = self.process_frame(frame)
+        action = self.generate_action(frame_encoding)
+        self.perform_action(action)
+
+    # Generate a frame encoding from a frame.
+    def process_frame(self, frame):
+        pass
+
+    # Generate an action from a frame encoding.
+    def generate_action(self, frame_encoding):
+        pass
+
+    # Perform an action.
+    def perform_action(self, action):
         pass
 
     def press(key):
